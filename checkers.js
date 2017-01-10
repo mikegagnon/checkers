@@ -104,6 +104,10 @@ class Checkers {
         }
     }
 
+    validPieceToMove(coord) {
+        return this.matrix[coord.row][coord.col] == this.player;
+    }
+
     // returns a list of PlayerCoordinate objects
     // TODO: code dedup
     getInitPosition() {
@@ -783,8 +787,10 @@ function cellClick(row, col) {
     // Ignores invalid moves from the human
     assert(GAME.player == HUMAN_PLAYER);
 
-    if (SELECT_PIECE_CELL == undefined) {
-        SELECT_PIECE_CELL = new Coordinate(row, col);
+    var coord = new Coordinate(row, col);
+
+    if (SELECT_PIECE_CELL == undefined && GAME.validPieceToMove(coord)) {
+        SELECT_PIECE_CELL = coord;
         VIZ.drawSelectPiece(SELECT_PIECE_CELL);
     } else {
         // ?
