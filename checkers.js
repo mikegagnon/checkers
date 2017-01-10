@@ -122,6 +122,8 @@ class Checkers {
         }*/
     }
 
+
+    // TODO: simplify with drdc
     getMoveUpLeft(coord) {
         if (this.getCell(coord.row - 1, coord.col - 1) == EMPTY) {
             var newCoord = new Coordinate(coord.row - 1, coord.col - 1);
@@ -142,6 +144,26 @@ class Checkers {
         }
     }
 
+    getMoveDownLeft(coord) {
+        if (this.getCell(coord.row + 1, coord.col - 1) == EMPTY) {
+            var newCoord = new Coordinate(coord.row + 1, coord.col - 1);
+            var move = new Move(coord, newCoord, undefined, this.player, undefined);
+            return [move];
+        } else {
+            return [];
+        }
+    }
+
+    getMoveDownRight(coord) {
+        if (this.getCell(coord.row + 1, coord.col + 1) == EMPTY) {
+            var newCoord = new Coordinate(coord.row + 1, coord.col + 1);
+            var move = new Move(coord, newCoord, undefined, this.player, undefined);
+            return [move];
+        } else {
+            return [];
+        }
+    }
+
     // todo make elegant and dedup
     getPossibleMoves(coord) {
         assert(this.gameOver == undefined);
@@ -153,27 +175,13 @@ class Checkers {
         var moves = [];
 
         if (this.player == UP_PLAYER) {
-
             moves = moves
                 .concat(this.getMoveUpLeft(coord))
                 .concat(this.getMoveUpRight(coord));
-
-            
-
         } else {
-
-            if (this.getCell(coord.row + 1, coord.col - 1) == EMPTY) {
-                var newCoord = new Coordinate(coord.row + 1, coord.col - 1);
-                var move = new Move(coord, newCoord, undefined, this.player, undefined);
-                moves.push(move);
-            }
-            
-            if (this.getCell(coord.row + 1, coord.col + 1) == EMPTY) {
-                var newCoord = new Coordinate(coord.row + 1, coord.col + 1);
-                var move = new Move(coord, newCoord, undefined, this.player, undefined);
-                moves.push(move);
-            }
-
+            moves = moves
+                .concat(this.getMoveDownLeft(coord))
+                .concat(this.getMoveDownRight(coord));
         }
 
         // temporary
