@@ -27,22 +27,30 @@ FIRST_PLAYER = PLAYER_ONE;
 HUMAN_PLAYER = PLAYER_ONE; 
 COMPUTER_PLAYER = PLAYER_TWO;
 
+// Todo hline of stars
+class Coordinate {
+    constructor(row, col) {
+        this.row = row;
+        this.col = col;
+    }
+}
+
+class PlayerCoordinate {
+    constructor(player, coord) {
+        this.player = player;
+        this.coord = coord;
+    }
+}
+
 /*******************************************************************************
  * Move is the interface between Checkers and Viz
  ******************************************************************************/
 class Move {
-    // valid == true iff the move results in change in game state
-    // (row, col) are the coordinates that player added their mark
-    // player is either PLAYER_ONE or PLAYER_TWO, depending on who made the move
-    // TODO: document captured
-    // gameOver is either undefined (which signifies the game has not concluded)
-    // or gameOver is a GameOver object, representing the conclusion of the game
-    constructor(valid, row, col, player, captured, gameOver) {
+    // TODO: document
+    constructor(valid, coords, player, gameOver) {
         this.valid = valid;
-        this.row = row;
-        this.col = col;
+        this.coords = coords;
         this.player = player;
-        this.captured = captured;
         this.gameOver = gameOver;
     }
 }
@@ -96,6 +104,53 @@ class Checkers {
         }
     }
 
+    // returns a list of PlayerCoordinate objects
+    // TODO: code dedup
+    getInitPosition() {
+        var NUM_ROWS_PER_PLAYER = 3;
+        assert(this.numRows >= NUM_ROWS_PER_PLAYER * 2);
+
+        var pcs = []
+
+        for (var row = 0; row < NUM_ROWS_PER_PLAYER; row++) {
+            var startColumn;
+
+            if (row % 2 == 0) {
+                startColumn = 0;
+            } else {
+                startColumn = 1;
+            }
+
+            for (var col = startColumn; col < this.numCols; col += 2) {
+                var pc =
+                    new PlayerCoordinate(PLAYER_ONE, new Coordinate(row, col));
+
+                pcs.push(pc);
+            }
+        }
+
+        var firstRow = this.numRows - NUM_ROWS_PER_PLAYER - 1;
+        for (var row = this.numRows - 1; row > firstRow; row--) {
+            var startColumn;
+
+            if (row % 2 == 0) {
+                startColumn = 0;
+            } else {
+                startColumn = 1;
+            }
+
+            for (var col = startColumn; col < this.numCols; col += 2) {
+                var pc =
+                    new PlayerCoordinate(PLAYER_TWO, new Coordinate(row, col));
+
+                pcs.push(pc);
+            }
+        }
+
+        return pcs;
+
+    }
+
 
     // player is either PLAYER_ONE or PLAYER_TWO, and indicates which player has
     // the next move
@@ -119,7 +174,6 @@ class Checkers {
         // this.player always equals the player (either PLAYER_ONE or
         // PLAYER_TWO) who has the next move.
         this.player = player;
-
 
         // If the game is over, then this.gameOver equals a GameOver object
         // that describes the properties of the conclusion of the game
@@ -528,6 +582,18 @@ class Viz {
         return "<img src='" + filename + "' width='" + this.cell_size + "'>";
     }
 
+    // todo dedup
+    drawInitPosition(playerCoords) {
+
+        for (var i = 0; i < playerCoords.length; i++) {
+            var pc = playerCoords[i];
+
+            var cellId = Viz.getCellId(pc.coord.row, pc.coord.col);
+            var imgTag = this.getImgTag(pc.player);
+
+            $("#" + cellId).append(imgTag);
+        }
+    }
 
     drawMove(move) {
         if (!move.valid) {
@@ -677,6 +743,7 @@ var GAME = new Checkers(FIRST_PLAYER, NUM_ROWS, NUM_COLS);
 
 // Global variable to hold the Viz class
 var VIZ = new Viz("#board", NUM_ROWS, NUM_COLS, cell_size);
+VIZ.drawInitPosition(GAME.getInitPosition());
 
 if (FIRST_PLAYER == COMPUTER_PLAYER) {
     move = makeAiMove(GAME);
