@@ -116,13 +116,6 @@ class Checkers {
             }
         }
 
-        // Set the opening moves
-        var openingMoves = this.getOpeningMoves();
-        for (var i = 0; i < openingMoves.length; i++) {
-            var move = openingMoves[i];
-            this.matrix[move.row][move.col] = move.player;
-        }
-
         // this.player always equals the player (either PLAYER_ONE or
         // PLAYER_TWO) who has the next move.
         this.player = player;
@@ -132,15 +125,6 @@ class Checkers {
         // that describes the properties of the conclusion of the game
         // If the game is not over, then this.gameOver is undefined.
         this.gameOver = undefined;
-    }
-
-    getOpeningMoves() {
-        return [
-            new Move(true, this.numRows / 2, this.numCols / 2, PLAYER_ONE, [], undefined),
-            new Move(true, this.numRows / 2 - 1, this.numCols / 2 - 1, PLAYER_ONE, [], undefined),
-            new Move(true, this.numRows / 2 - 1, this.numCols / 2, PLAYER_TWO, [], undefined),
-            new Move(true, this.numRows / 2, this.numCols / 2 - 1, PLAYER_TWO, [], undefined),
-        ]
     }
 
     deepCopy() {
@@ -693,13 +677,6 @@ var GAME = new Checkers(FIRST_PLAYER, NUM_ROWS, NUM_COLS);
 
 // Global variable to hold the Viz class
 var VIZ = new Viz("#board", NUM_ROWS, NUM_COLS, cell_size);
-
-var openingMoves = GAME.getOpeningMoves();
-for (var i = 0; i < openingMoves.length; i++) {
-    var move = openingMoves[i];
-    VIZ.drawMove(move);
-}
-
 
 if (FIRST_PLAYER == COMPUTER_PLAYER) {
     move = makeAiMove(GAME);
