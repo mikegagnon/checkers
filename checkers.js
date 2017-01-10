@@ -55,6 +55,7 @@ class PlayerCoordinate {
  ******************************************************************************/
 class Move {
     // TODO: document
+    // todo switch to begin and end instead of coordBegin...
     constructor(coordBegin, coordEnd, jumpOver, player, gameOver) {
         this.coordBegin = coordBegin;
         this.coordEnd = coordEnd;
@@ -127,7 +128,7 @@ class Checkers {
         var opponent = Checkers.getOpponent(this.player);
         if (this.getCell(begin.row - 1, begin.col - 1) == opponent &&
             this.getCell(begin.row - 2, begin.col - 2) == EMPTY) {
-            var jumpedOver = new Coordinate(begin.row - 1, begin.row-2 )
+            var jumpedOver = new Coordinate(begin.row - 1, begin.col - 1);
             var end = new Coordinate(begin.row - 2, begin.col - 2);
             var move = new Move(begin, end, jumpedOver, this.player, undefined);
             return [move];
@@ -389,13 +390,34 @@ class Checkers {
         }
 
         if (move.player == UP_PLAYER) {
-            if (endRow != beginRow - 1) {
-                return false;
-            }
 
-            if (endCol != beginCol - 1 &&
-                endCol != beginCol + 1) {
-                return false;
+            if (move.jumpOver != undefined) {
+
+                if (endRow != beginRow - 2) {
+                    return false;
+                }
+
+                if (endCol != beginCol - 2 &&
+                    endCol != beginCol + 2) {
+                    return false;
+                }
+
+                var [jumpRow, jumpCol] = [move.jumpOver.row, move.jumpOver.col];
+                var opponent = Checkers.getOpponent(this.player);
+
+                if (this.getCell(jumpRow, jumpCol) != opponent) {
+                    return false;
+                }
+
+            } else {
+                if (endRow != beginRow - 1) {
+                    return false;
+                }
+
+                if (endCol != beginCol - 1 &&
+                    endCol != beginCol + 1) {
+                    return false;
+                }
             }
         } else {
             if (endRow != beginRow + 1) {
