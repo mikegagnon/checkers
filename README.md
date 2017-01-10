@@ -1,2 +1,2 @@
-# Checkers
-A checkers AI
+# Othello
+An AI for the game Othello
