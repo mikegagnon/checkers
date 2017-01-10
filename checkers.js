@@ -364,8 +364,23 @@ class Checkers {
 
     // assumes move is valid
     makeMove(move) {
+        assert(this.isMoveValid(move));
 
-        
+        var [beginRow, beginCol] = [move.coordBegin.row, move.coordBegin.col];
+        var [endRow, endCol] = [move.coordEnd.row, move.coordEnd.col];
+
+        this.matrix[beginRow][beginCol] = EMPTY;
+        this.matrix[endRow][endCol] = this.player;
+
+        this.checkGameOver();
+
+        this.player = Checkers.getOpponent(this.player);        
+
+        return new Move(
+            move.coordBegin,
+            move.coordEnd,
+            move.player,
+            this.gameOver);
     }
 
     // returns true iff player has a valid move
@@ -385,23 +400,9 @@ class Checkers {
         return false;
     }
 
+    // TODO
     checkGameOver() {
-        if (!this.canMove(PLAYER_ONE) && !this.canMove(PLAYER_TWO)) {
-            var count = {};
-            count[PLAYER_ONE] = this.countPieces(PLAYER_ONE);
-            count[PLAYER_TWO] = this.countPieces(PLAYER_TWO);
 
-            var victor;
-            if (count[PLAYER_ONE] == count[PLAYER_TWO]) {
-                victor = undefined;
-            } else if (count[PLAYER_ONE] > count[PLAYER_TWO]) {
-                victor = PLAYER_ONE;
-            } else {
-                victor = PLAYER_TWO;
-            }
-
-            this.gameOver = new GameOver(victor, count);
-        }
     }
 
     countPieces(player) {
@@ -718,61 +719,26 @@ class Viz {
         $("#" + cellId + " img").remove();
     }
 
-    drawMove(move) {
-        if (!move.valid) {
-            return;
+    // assumes move is valid
+    drawMove(move, possibleMoves) {
+
+        for (var i = 0; i < possibleMoves.length; i++) {
+            VIZ.undoDrawSuggestion(possibleMoves[i]);
         }
 
-        var cellId = Viz.getCellId(move.row, move.col);
+        var [beginRow, beginCol] = [move.coordBegin.row, move.coordBegin.col];
+        var [endRow, endCol] = [move.coordEnd.row, move.coordEnd.col];
+
+        // todo coord for getcellid
+        // Remove the piece
+        var cellId = Viz.getCellId(beginRow, beginCol);
+        $("#" + cellId).removeClass("selected");
+        $("#" + cellId + " img").remove();
+
+        // Add the piece
+        var cellId = Viz.getCellId(endRow, endCol);
         var imgTag = this.getImgTag(move.player);
-
         $("#" + cellId).append(imgTag);
-
-
-        var THIS = this;
-
-        function drawCapture() {
-            for (var i = 0; i < move.captured.length; i++) {
-                var [row, col] = move.captured[i];
-                console.log(row, col);
-
-                var cellId = Viz.getCellId(row, col);
-                var imgTag = THIS.getImgTag(move.player);
-
-                $("#" + cellId + " img").remove();
-                $("#" + cellId).append(imgTag);
-
-            }
-        }
-
-        if (move.player == COMPUTER_PLAYER) {
-            window.setTimeout(drawCapture, CAPTURE_DELAY);
-        } else {
-            drawCapture();
-        }
-
-        if (move.gameOver != undefined &&
-            move.gameOver.victoryCells != undefined) {
-
-            for (var i = 0; i < move.gameOver.victoryCells.length; i++) {
-                var [row, col] = move.gameOver.victoryCells[i];
-
-                var cellId = Viz.getCellId(row, col);
-
-                $("#" + cellId).css("background-color", "gray");
-
-                $("#" + cellId).css("outline",  "black solid 2px");
-
-            }
-        }
-
-        if (move.gameOver != undefined) {
-            if (move.gameOver.victor == HUMAN_PLAYER) {
-                alert("You win!");
-            } else {
-                alert("You lose.")
-            }
-        }
     }
 }
 
@@ -879,18 +845,25 @@ var POSSIBLE_MOVES = undefined;
 function cellClick(row, col) {
 
     // Ignores invalid moves from the human
-    assert(GAME.player == HUMAN_PLAYER);
+    //assert(GAME.player == HUMAN_PLAYER);
 
     var coord = new Coordinate(row, col); 
 
+    var madeMove = false;
     if (POSSIBLE_MOVES != undefined) {
         for (var i = 0; i < POSSIBLE_MOVES.length; i++) {
             var move = POSSIBLE_MOVES[i];
             if (move.coordEnd.equals(coord)) {
-                GAME.makeMove(move);
-                VIZ.drawMove(move);
+                var resultMove = GAME.makeMove(move);
+                VIZ.drawMove(resultMove, POSSIBLE_MOVES);
+                madeMove = true;
             }
         }
+    }
+
+    if (madeMove) {
+        POSSIBLE_MOVES = undefined;
+        SELECT_PIECE_CELL = undefined;
     }
 
 
