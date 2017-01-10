@@ -123,7 +123,7 @@ class Checkers {
 
             for (var col = startColumn; col < this.numCols; col += 2) {
                 var pc =
-                    new PlayerCoordinate(PLAYER_ONE, new Coordinate(row, col));
+                    new PlayerCoordinate(PLAYER_TWO, new Coordinate(row, col));
 
                 pcs.push(pc);
             }
@@ -141,7 +141,7 @@ class Checkers {
 
             for (var col = startColumn; col < this.numCols; col += 2) {
                 var pc =
-                    new PlayerCoordinate(PLAYER_TWO, new Coordinate(row, col));
+                    new PlayerCoordinate(PLAYER_ONE, new Coordinate(row, col));
 
                 pcs.push(pc);
             }
@@ -563,6 +563,19 @@ class Viz {
                 $("#" + rowId).append(cellTag);
                 $("#" + cellId).css("width", this.cell_size);
                 $("#" + cellId).css("height", this.cell_size);
+
+                var cssClass;
+                if ((row % 2 == 0 && col % 2 == 0) ||
+                    (row % 2 == 1 && col % 2 == 1)) {
+                    cssClass = "light"; 
+                } else {
+                    cssClass = "dark";
+                }
+
+                $("#" + cellId).addClass(cssClass);
+
+
+
             }
         }
     }

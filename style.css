@@ -4,11 +4,11 @@
 }
 
 .dark {
-    background-color: "darkgray";
+    background-color: #aaa;
 }
 
 .light {
-    background-color: "lightgray";
+    background-color: #ddd;
 }
 
 .cell {
