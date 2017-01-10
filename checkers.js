@@ -123,6 +123,19 @@ class Checkers {
     }
 
 
+    getJumpUpLeft(begin) {
+        var opponent = Checkers.getOpponent(this.player);
+        if (this.getCell(begin.row - 1, begin.col - 1) == opponent &&
+            this.getCell(begin.row - 2, begin.col - 2) == EMPTY) {
+            var jumpedOver = new Coordinate(begin.row - 1, begin.row-2 )
+            var end = new Coordinate(begin.row - 2, begin.col - 2);
+            var move = new Move(begin, end, jumpedOver, this.player, undefined);
+            return [move];
+        } else {
+            return [];
+        }
+    }
+
     // TODO: simplify with drdc
     getMoveUpLeft(coord) {
         if (this.getCell(coord.row - 1, coord.col - 1) == EMPTY) {
@@ -175,9 +188,13 @@ class Checkers {
         var moves = [];
 
         if (this.player == UP_PLAYER) {
-            moves = moves
-                .concat(this.getMoveUpLeft(coord))
-                .concat(this.getMoveUpRight(coord));
+            moves = moves.concat(this.getJumpUpLeft(coord));
+
+            if (moves.length == 0) {
+                moves = moves
+                    .concat(this.getMoveUpLeft(coord))
+                    .concat(this.getMoveUpRight(coord));
+            }
         } else {
             moves = moves
                 .concat(this.getMoveDownLeft(coord))
