@@ -19,3 +19,8 @@
     float: left; 
     cursor: pointer;
 }
+
+.selected {
+    box-shadow: 0px 0px 0px 2px black inset;
+    background: #F7DC6F;
+}

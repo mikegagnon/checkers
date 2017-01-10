@@ -171,6 +171,13 @@ class Checkers {
             }
         }
 
+        // TODO Document
+        var initPosition = this.getInitPosition();
+        for (var i = 0; i < initPosition.length; i++) {
+            var pc = initPosition[i];
+            this.matrix[pc.coord.row][pc.coord.col] = pc.player;
+        }
+
         // this.player always equals the player (either PLAYER_ONE or
         // PLAYER_TWO) who has the next move.
         this.player = player;
@@ -532,6 +539,7 @@ class Viz {
     
     /* Static functions *******************************************************/
 
+    // TODO: change to coord
     static getCellId(row, col) {
         return "cell-" + row + "-" + col;
     }
@@ -606,6 +614,11 @@ class Viz {
 
             $("#" + cellId).append(imgTag);
         }
+    }
+
+    drawSelectPiece(coord) {
+        var cellId = Viz.getCellId(coord.row, coord.col);
+        $("#" + cellId).addClass("selected");
     }
 
     drawMove(move) {
@@ -763,38 +776,24 @@ if (FIRST_PLAYER == COMPUTER_PLAYER) {
     VIZ.drawMove(move);
 }
 
+var SELECT_PIECE_CELL = undefined;
+
 function cellClick(row, col) {
 
     // Ignores invalid moves from the human
     assert(GAME.player == HUMAN_PLAYER);
+
+    if (SELECT_PIECE_CELL == undefined) {
+        SELECT_PIECE_CELL = new Coordinate(row, col);
+        VIZ.drawSelectPiece(SELECT_PIECE_CELL);
+    } else {
+        // ?
+    }
+
+
+
+
     var move = GAME.makeMove(row, col);
     VIZ.drawMove(move);
-
-    if (move.valid && GAME.player == HUMAN_PLAYER) {
-        alert("The computer passed a turn.");
-    }
-
-    function doAi() {
-        move = makeAiMove(GAME);
-        VIZ.drawMove(move);
-
-        if (GAME.player == COMPUTER_PLAYER) {
-            alert("You passed a turn.");
-        }
-
-        if (move.valid &&
-            GAME.gameOver == undefined &&
-            GAME.player == COMPUTER_PLAYER) {
-            window.setTimeout(doAi, 300);
-        }
-
-    }
-
-    if (move.valid &&
-        GAME.gameOver == undefined &&
-        GAME.player == COMPUTER_PLAYER) {
-        window.setTimeout(doAi, 300);
-    }
-
 }
 
