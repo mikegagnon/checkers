@@ -15,9 +15,11 @@ EMPTY = 0;
 
 PLAYER_ONE = 1;
 PLAYER_ONE_FILENAME = "player-1.png";
+UP_PLAYER = PLAYER_ONE;
 
 PLAYER_TWO = 2;
 PLAYER_TWO_FILENAME = "player-2.png";
+DOWN_PLAYER = PLAYER_TWO;
 
 MAXIMIZING_PLAYER = PLAYER_ONE;
 MINIMIZING_PLAYER = PLAYER_TWO;
@@ -104,6 +106,49 @@ class Checkers {
         }
     }
 
+    // todo make elegant and dedup
+    possibleMoves(coord) {
+        assert(this.gameOver == undefined);
+
+        if (!this.validPieceToMove(coord)) {
+            return [];
+        }
+
+        var moves = [];
+
+        if (this.player == UP_PLAYER) {
+            if (this.getCell(coord.row - 1, coord.col - 1) == EMPTY) {
+                var newCoord = new Coordinate(coord.row - 1, coord.col - 1);
+                var move = new Move(true, [coord, newCoord], this.player, undefined);
+                moves.push(move);
+            }
+            
+            if (this.getCell(coord.row - 1, coord.col + 1) == EMPTY) {
+                var newCoord = new Coordinate(coord.row - 1, coord.col + 1);
+                var move = new Move(true, [coord, newCoord], this.player, undefined);
+                moves.push(move);
+            }
+
+        } else {
+
+            if (this.getCell(coord.row + 1, coord.col - 1) == EMPTY) {
+                var newCoord = new Coordinate(coord.row + 1, coord.col - 1);
+                var move = new Move(true, [coord, newCoord], this.player, undefined);
+                moves.push(move);
+            }
+            
+            if (this.getCell(coord.row + 1, coord.col + 1) == EMPTY) {
+                var newCoord = new Coordinate(coord.row + 1, coord.col + 1);
+                var move = new Move(true, [coord, newCoord], this.player, undefined);
+                moves.push(move);
+            }
+
+        }
+
+        return moves;
+
+    }
+
     validPieceToMove(coord) {
         return this.matrix[coord.row][coord.col] == this.player;
     }
@@ -127,7 +172,7 @@ class Checkers {
 
             for (var col = startColumn; col < this.numCols; col += 2) {
                 var pc =
-                    new PlayerCoordinate(PLAYER_TWO, new Coordinate(row, col));
+                    new PlayerCoordinate(DOWN_PLAYER, new Coordinate(row, col));
 
                 pcs.push(pc);
             }
@@ -145,7 +190,7 @@ class Checkers {
 
             for (var col = startColumn; col < this.numCols; col += 2) {
                 var pc =
-                    new PlayerCoordinate(PLAYER_ONE, new Coordinate(row, col));
+                    new PlayerCoordinate(UP_PLAYER, new Coordinate(row, col));
 
                 pcs.push(pc);
             }
@@ -214,6 +259,7 @@ class Checkers {
                numCaptured == 0;
     }
 
+    // todo coord
     getCell(row, col) {
         if (!(row >= 0 && row < this.numRows &&
                col >= 0 && col < this.numCols)) {
@@ -787,9 +833,14 @@ function cellClick(row, col) {
     // Ignores invalid moves from the human
     assert(GAME.player == HUMAN_PLAYER);
 
-    var coord = new Coordinate(row, col);
+    var coord = new Coordinate(row, col); 
 
-    if (SELECT_PIECE_CELL == undefined && GAME.validPieceToMove(coord)) {
+    var possibleMoves = GAME.possibleMoves(coord);
+
+    if (SELECT_PIECE_CELL == undefined && possibleMoves.length > 0) {
+
+        console.log(possibleMoves);
+
         SELECT_PIECE_CELL = coord;
         VIZ.drawSelectPiece(SELECT_PIECE_CELL);
     } else {
