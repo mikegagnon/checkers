@@ -55,9 +55,10 @@ class PlayerCoordinate {
  ******************************************************************************/
 class Move {
     // TODO: document
-    constructor(coordBegin, coordEnd, player, gameOver) {
+    constructor(coordBegin, coordEnd, jumpOver, player, gameOver) {
         this.coordBegin = coordBegin;
         this.coordEnd = coordEnd;
+        this.jumpOver = jumpOver;
         this.player = player;
         this.gameOver = gameOver;
     }
@@ -112,6 +113,10 @@ class Checkers {
         }
     }
 
+    getAvailableJumps() {
+        
+    }
+
     // todo make elegant and dedup
     getPossibleMoves(coord) {
         assert(this.gameOver == undefined);
@@ -125,13 +130,13 @@ class Checkers {
         if (this.player == UP_PLAYER) {
             if (this.getCell(coord.row - 1, coord.col - 1) == EMPTY) {
                 var newCoord = new Coordinate(coord.row - 1, coord.col - 1);
-                var move = new Move(coord, newCoord, this.player, undefined);
+                var move = new Move(coord, newCoord, undefined, this.player, undefined);
                 moves.push(move);
             }
             
             if (this.getCell(coord.row - 1, coord.col + 1) == EMPTY) {
                 var newCoord = new Coordinate(coord.row - 1, coord.col + 1);
-                var move = new Move(coord, newCoord, this.player, undefined);
+                var move = new Move(coord, newCoord, undefined, this.player, undefined);
                 moves.push(move);
             }
 
@@ -139,13 +144,13 @@ class Checkers {
 
             if (this.getCell(coord.row + 1, coord.col - 1) == EMPTY) {
                 var newCoord = new Coordinate(coord.row + 1, coord.col - 1);
-                var move = new Move(coord, newCoord, this.player, undefined);
+                var move = new Move(coord, newCoord, undefined, this.player, undefined);
                 moves.push(move);
             }
             
             if (this.getCell(coord.row + 1, coord.col + 1) == EMPTY) {
                 var newCoord = new Coordinate(coord.row + 1, coord.col + 1);
-                var move = new Move(coord, newCoord, this.player, undefined);
+                var move = new Move(coord, newCoord, undefined, this.player, undefined);
                 moves.push(move);
             }
 
@@ -379,6 +384,7 @@ class Checkers {
         return new Move(
             move.coordBegin,
             move.coordEnd,
+            undefined,
             move.player,
             this.gameOver);
     }
