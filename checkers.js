@@ -115,16 +115,6 @@ class Checkers {
         }
     }
 
-    getAvailableJumps() {
-
-        /*for (var row = 0; row < this.numRows; numRows++) {
-            for (var row = 0 ; row < this.numCols; numCols++) {
-                var possibleMoves = this.getPossibleMoves
-            }
-        }*/
-    }
-
-
     getJumpUpLeft(begin) {
         var opponent = Checkers.getOpponent(this.player);
         if (this.getCell(begin.row - 1, begin.col - 1) == opponent &&
@@ -218,6 +208,38 @@ class Checkers {
         }
     }
 
+    // Returns true if this.player has at least one jump available
+    availableJump() {
+
+        for (var row = 0; row < this.numRows; row++) {
+            for (var col = 0 ; col < this.numCols; col++) {
+                var coord = new Coordinate(row, col);
+
+                if (this.matrix[row][col] == this.player) {
+
+                    var jumps = [];
+
+                    if (this.player == UP_PLAYER) {
+                        jumps = jumps
+                            .concat(this.getJumpUpLeft(coord))
+                            .concat(this.getJumpUpRight(coord));
+                    } else {
+                        jumps = jumps
+                            .concat(this.getJumpDownLeft(coord))
+                            .concat(this.getJumpDownRight(coord));
+                    }
+
+                    if (jumps.length > 0) {
+                        return true;
+                    }
+                }
+
+            }
+        }
+
+        return false;
+    }
+
     // todo make elegant and dedup
     getPossibleMoves(coord) {
         assert(this.gameOver == undefined);
@@ -226,6 +248,8 @@ class Checkers {
             return [];
         }
 
+        var jumpPossible = this.availableJump();
+
         var moves = [];
 
         if (this.player == UP_PLAYER) {
@@ -233,7 +257,7 @@ class Checkers {
                 .concat(this.getJumpUpLeft(coord))
                 .concat(this.getJumpUpRight(coord));
 
-            if (moves.length == 0) {
+            if (moves.length == 0 && !jumpPossible) {
                 moves = moves
                     .concat(this.getMoveUpLeft(coord))
                     .concat(this.getMoveUpRight(coord));
@@ -244,7 +268,7 @@ class Checkers {
                 .concat(this.getJumpDownLeft(coord))
                 .concat(this.getJumpDownRight(coord));
 
-            if (moves.length == 0) {
+            if (moves.length == 0 && !jumpPossible) {
                 moves = moves
                     .concat(this.getMoveDownLeft(coord))
                     .concat(this.getMoveDownRight(coord));
