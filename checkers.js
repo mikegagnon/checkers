@@ -114,7 +114,12 @@ class Checkers {
     }
 
     getAvailableJumps() {
-        
+
+        /*for (var row = 0; row < this.numRows; numRows++) {
+            for (var row = 0 ; row < this.numCols; numCols++) {
+                var possibleMoves = this.getPossibleMoves
+            }
+        }*/
     }
 
     // todo make elegant and dedup
