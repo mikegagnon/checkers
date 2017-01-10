@@ -37,6 +37,10 @@ class Coordinate {
         this.row = row;
         this.col = col;
     }
+
+    equals(coord) {
+        return this.row == coord.row && this.col == coord.col;d
+    }
 }
 
 class PlayerCoordinate {
@@ -51,9 +55,9 @@ class PlayerCoordinate {
  ******************************************************************************/
 class Move {
     // TODO: document
-    constructor(valid, coords, player, gameOver) {
-        this.valid = valid;
-        this.coords = coords;
+    constructor(coordBegin, coordEnd, player, gameOver) {
+        this.coordBegin = coordBegin;
+        this.coordEnd = coordEnd;
         this.player = player;
         this.gameOver = gameOver;
     }
@@ -121,13 +125,13 @@ class Checkers {
         if (this.player == UP_PLAYER) {
             if (this.getCell(coord.row - 1, coord.col - 1) == EMPTY) {
                 var newCoord = new Coordinate(coord.row - 1, coord.col - 1);
-                var move = new Move(true, [coord, newCoord], this.player, undefined);
+                var move = new Move(coord, newCoord, this.player, undefined);
                 moves.push(move);
             }
             
             if (this.getCell(coord.row - 1, coord.col + 1) == EMPTY) {
                 var newCoord = new Coordinate(coord.row - 1, coord.col + 1);
-                var move = new Move(true, [coord, newCoord], this.player, undefined);
+                var move = new Move(coord, newCoord, this.player, undefined);
                 moves.push(move);
             }
 
@@ -135,22 +139,28 @@ class Checkers {
 
             if (this.getCell(coord.row + 1, coord.col - 1) == EMPTY) {
                 var newCoord = new Coordinate(coord.row + 1, coord.col - 1);
-                var move = new Move(true, [coord, newCoord], this.player, undefined);
+                var move = new Move(coord, newCoord, this.player, undefined);
                 moves.push(move);
             }
             
             if (this.getCell(coord.row + 1, coord.col + 1) == EMPTY) {
                 var newCoord = new Coordinate(coord.row + 1, coord.col + 1);
-                var move = new Move(true, [coord, newCoord], this.player, undefined);
+                var move = new Move(coord, newCoord, this.player, undefined);
                 moves.push(move);
             }
 
+        }
+
+        // temporary
+        for (var i = 0; i < moves.length; i++) {
+            assert(this.isMoveValid(move));
         }
 
         return moves;
 
     }
 
+    // TODO better function name
     validPieceToMove(coord) {
         return this.matrix[coord.row][coord.col] == this.player;
     }
@@ -255,12 +265,6 @@ class Checkers {
         return newGame;
     }
 
-    isMoveInvalid(row, col, numCaptured) {
-        return this.matrix[row][col] != EMPTY ||
-               this.gameOver != undefined ||
-               numCaptured == 0;
-    }
-
     // todo coord
     getCell(row, col) {
         if (!(row >= 0 && row < this.numRows &&
@@ -271,6 +275,7 @@ class Checkers {
         }
     }
 
+    // old
     tryCaptureDrDc(player, row, col, dr, dc) {
 
         var otherPlayer;
@@ -299,6 +304,7 @@ class Checkers {
         }
     }
 
+    // old
     tryCapture(player, row, col) {
         var capturedUp = this.tryCaptureDrDc(player, row, col, -1, 0);
         var capturedDown = this.tryCaptureDrDc(player, row, col, 1, 0);
@@ -321,45 +327,45 @@ class Checkers {
             .concat(capturedDiagonal4)
     }
 
-    makeMove(row, col) {
-
-        assert(row >= 0 && row < this.numRows);
-        assert(col >= 0 && col < this.numCols);
-
-        var captured = this.tryCapture(this.player, row, col);
-
-        if (this.isMoveInvalid(row, col, captured.length)) {
-            return new Move(false, undefined, undefined, undefined, undefined, undefined);
-        } 
-
-        for (var i = 0; i < captured.length; i++) {
-            var [r, c] = captured[i];
-            this.matrix[r][c] = this.player;
-        } 
-
-        this.matrix[row][col] = this.player;
-
-        this.checkGameOver();
-
-        var move = new Move(true, row, col, this.player, captured, this.gameOver);
-
-        // TODO: dedup
-        if (this.player == PLAYER_ONE) {
-            this.player = PLAYER_TWO;
-        } else {
-            this.player = PLAYER_ONE;
+    isMoveValid(move) {
+        var [beginRow, beginCol] = [move.coordBegin.row, move.coordBegin.col];
+        if (this.getCell(beginRow, beginCol) != move.player) {
+            return false;
         }
 
-        // If this.player must pass
-        if (this.gameOver == undefined && !this.canMove(this.player)) {
-            if (this.player == PLAYER_ONE) {
-                this.player = PLAYER_TWO;
-            } else {
-                this.player = PLAYER_ONE;
+        var [endRow, endCol] = [move.coordEnd.row, move.coordEnd.col];
+        if (this.getCell(endRow, endCol) != EMPTY) {
+            return false;
+        }
+
+        if (move.player == UP_PLAYER) {
+            if (endRow != beginRow - 1) {
+                return false;
+            }
+
+            if (endCol != beginCol - 1 &&
+                endCol != beginCol + 1) {
+                return false;
+            }
+        } else {
+            if (endRow != beginRow + 1) {
+                return false;
+            }
+
+            if (endCol != beginCol - 1 &&
+                endCol != beginCol + 1) {
+                return false;
             }
         }
 
-        return move;
+        return true;
+
+    }
+
+    // assumes move is valid
+    makeMove(move) {
+
+        
     }
 
     // returns true iff player has a valid move
@@ -695,8 +701,8 @@ class Viz {
     }
 
     drawSuggestion(move) {
-        var row = move.coords[1].row;
-        var col = move.coords[1].col;
+        var row = move.coordEnd.row;
+        var col = move.coordEnd.col;
         var cellId = Viz.getCellId(row, col);
         var suggestionTag = this.getSuggestionTag(move.player);
 
@@ -705,8 +711,8 @@ class Viz {
     }
 
     undoDrawSuggestion(move) {
-        var row = move.coords[1].row;
-        var col = move.coords[1].col;
+        var row = move.coordEnd.row;
+        var col = move.coordEnd.col;
         var cellId = Viz.getCellId(row, col);
 
         $("#" + cellId + " img").remove();
@@ -877,11 +883,20 @@ function cellClick(row, col) {
 
     var coord = new Coordinate(row, col); 
 
+    if (POSSIBLE_MOVES != undefined) {
+        for (var i = 0; i < POSSIBLE_MOVES.length; i++) {
+            var move = POSSIBLE_MOVES[i];
+            if (move.coordEnd.equals(coord)) {
+                GAME.makeMove(move);
+                VIZ.drawMove(move);
+            }
+        }
+    }
+
+
     var possibleMoves = GAME.getPossibleMoves(coord);
 
     if (possibleMoves.length > 0) {
-
-        console.log(possibleMoves);
 
         if (SELECT_PIECE_CELL != undefined) {
             VIZ.undoDrawSelectPiece(SELECT_PIECE_CELL);
@@ -905,7 +920,7 @@ function cellClick(row, col) {
 
 
 
-    var move = GAME.makeMove(row, col);
-    VIZ.drawMove(move);
+    //var move = GAME.makeMove(row, col);
+    //VIZ.drawMove(move);
 }
 
