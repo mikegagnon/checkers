@@ -131,6 +131,17 @@ class Checkers {
             return [];
         }
     }
+
+    getMoveUpRight(coord) {
+        if (this.getCell(coord.row - 1, coord.col + 1) == EMPTY) {
+            var newCoord = new Coordinate(coord.row - 1, coord.col + 1);
+            var move = new Move(coord, newCoord, undefined, this.player, undefined);
+            return [move];
+        } else {
+            return [];
+        }
+    }
+
     // todo make elegant and dedup
     getPossibleMoves(coord) {
         assert(this.gameOver == undefined);
@@ -143,13 +154,11 @@ class Checkers {
 
         if (this.player == UP_PLAYER) {
 
-            moves = moves.concat(this.getMoveUpLeft(coord));
+            moves = moves
+                .concat(this.getMoveUpLeft(coord))
+                .concat(this.getMoveUpRight(coord));
 
-            if (this.getCell(coord.row - 1, coord.col + 1) == EMPTY) {
-                var newCoord = new Coordinate(coord.row - 1, coord.col + 1);
-                var move = new Move(coord, newCoord, undefined, this.player, undefined);
-                moves.push(move);
-            }
+            
 
         } else {
 
