@@ -28,7 +28,7 @@ HUMAN_PLAYER = PLAYER_ONE;
 COMPUTER_PLAYER = PLAYER_TWO;
 
 /*******************************************************************************
- * Move is the interface between Othello and Viz
+ * Move is the interface between Checkers and Viz
  ******************************************************************************/
 class Move {
     // valid == true iff the move results in change in game state
@@ -83,9 +83,9 @@ class GameOver {
 }
 
 /*******************************************************************************
- * Othello class
+ * Checkers class
  ******************************************************************************/
-class Othello {
+class Checkers {
 
     // TODO: use
     static getOpponent(player) {
@@ -144,7 +144,7 @@ class Othello {
     }
 
     deepCopy() {
-        var newGame = new Othello(this.player, this.numRows, this.numCols);
+        var newGame = new Checkers(this.player, this.numRows, this.numCols);
 
         for (var row = 0; row < this.numRows; row++) {
             for (var col = 0; col < this.numCols; col++) {
@@ -355,7 +355,7 @@ class Node {
     }
 
     isPotential(player, row, col) {
-        if (this.game.matrix[row][col] != Othello.getOpponent(player)) {
+        if (this.game.matrix[row][col] != Checkers.getOpponent(player)) {
             return false;
         }
 
@@ -689,7 +689,7 @@ function makeAiMove(game) {
          
 var cell_size = 50;
 
-var GAME = new Othello(FIRST_PLAYER, NUM_ROWS, NUM_COLS);
+var GAME = new Checkers(FIRST_PLAYER, NUM_ROWS, NUM_COLS);
 
 // Global variable to hold the Viz class
 var VIZ = new Viz("#board", NUM_ROWS, NUM_COLS, cell_size);
