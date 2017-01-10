@@ -56,6 +56,7 @@ class PlayerCoordinate {
 class Move {
     // TODO: document
     // todo switch to begin and end instead of coordBegin...
+    // to change jumpOver to jumped
     constructor(coordBegin, coordEnd, jumpOver, player, gameOver) {
         this.coordBegin = coordBegin;
         this.coordEnd = coordEnd;
@@ -512,6 +513,11 @@ class Checkers {
         this.matrix[beginRow][beginCol] = EMPTY;
         this.matrix[endRow][endCol] = this.player;
 
+        if (move.jumpOver != undefined) {
+            var [row, col] = [move.jumpOver.row, move.jumpOver.col];
+            this.matrix[row][col] = EMPTY;
+        }
+
         this.checkGameOver();
 
         this.player = Checkers.getOpponent(this.player);        
@@ -519,7 +525,7 @@ class Checkers {
         return new Move(
             move.coordBegin,
             move.coordEnd,
-            undefined,
+            move.jumpOver,
             move.player,
             this.gameOver);
     }
@@ -869,6 +875,13 @@ class Viz {
 
         var [beginRow, beginCol] = [move.coordBegin.row, move.coordBegin.col];
         var [endRow, endCol] = [move.coordEnd.row, move.coordEnd.col];
+
+        if (move.jumpOver != undefined) {
+            var [row, col] = [move.jumpOver.row, move.jumpOver.col];
+
+            var cellId = Viz.getCellId(row, col);
+            $("#" + cellId + " img").remove();
+        }
 
         // todo coord for getcellid
         // Remove the piece
