@@ -671,6 +671,11 @@ class Viz {
         $("#" + cellId).addClass("selected");
     }
 
+    undoDrawSelectPiece(coord) {
+        var cellId = Viz.getCellId(coord.row, coord.col);
+        $("#" + cellId).removeClass("selected");
+    }
+
     drawMove(move) {
         if (!move.valid) {
             return;
@@ -837,9 +842,13 @@ function cellClick(row, col) {
 
     var possibleMoves = GAME.possibleMoves(coord);
 
-    if (SELECT_PIECE_CELL == undefined && possibleMoves.length > 0) {
+    if (possibleMoves.length > 0) {
 
         console.log(possibleMoves);
+
+        if (SELECT_PIECE_CELL != undefined) {
+            VIZ.undoDrawSelectPiece(SELECT_PIECE_CELL);
+        }
 
         SELECT_PIECE_CELL = coord;
         VIZ.drawSelectPiece(SELECT_PIECE_CELL);
