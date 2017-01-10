@@ -137,6 +137,45 @@ class Checkers {
         }
     }
 
+    getJumpUpRight(begin) {
+        var opponent = Checkers.getOpponent(this.player);
+        if (this.getCell(begin.row - 1, begin.col + 1) == opponent &&
+            this.getCell(begin.row - 2, begin.col + 2) == EMPTY) {
+            var jumpedOver = new Coordinate(begin.row - 1, begin.col + 1);
+            var end = new Coordinate(begin.row - 2, begin.col + 2);
+            var move = new Move(begin, end, jumpedOver, this.player, undefined);
+            return [move];
+        } else {
+            return [];
+        }
+    }
+
+    getJumpDownLeft(begin) {
+        var opponent = Checkers.getOpponent(this.player);
+        if (this.getCell(begin.row + 1, begin.col - 1) == opponent &&
+            this.getCell(begin.row + 2, begin.col - 2) == EMPTY) {
+            var jumpedOver = new Coordinate(begin.row + 1, begin.col - 1);
+            var end = new Coordinate(begin.row + 2, begin.col - 2);
+            var move = new Move(begin, end, jumpedOver, this.player, undefined);
+            return [move];
+        } else {
+            return [];
+        }
+    }
+
+    getJumpDownRight(begin) {
+        var opponent = Checkers.getOpponent(this.player);
+        if (this.getCell(begin.row + 1, begin.col + 1) == opponent &&
+            this.getCell(begin.row + 2, begin.col + 2) == EMPTY) {
+            var jumpedOver = new Coordinate(begin.row + 1, begin.col + 1);
+            var end = new Coordinate(begin.row + 2, begin.col + 2);
+            var move = new Move(begin, end, jumpedOver, this.player, undefined);
+            return [move];
+        } else {
+            return [];
+        }
+    }
+
     // TODO: simplify with drdc
     getMoveUpLeft(coord) {
         if (this.getCell(coord.row - 1, coord.col - 1) == EMPTY) {
@@ -189,7 +228,9 @@ class Checkers {
         var moves = [];
 
         if (this.player == UP_PLAYER) {
-            moves = moves.concat(this.getJumpUpLeft(coord));
+            moves = moves
+                .concat(this.getJumpUpLeft(coord))
+                .concat(this.getJumpUpRight(coord));
 
             if (moves.length == 0) {
                 moves = moves
@@ -197,9 +238,16 @@ class Checkers {
                     .concat(this.getMoveUpRight(coord));
             }
         } else {
+
             moves = moves
-                .concat(this.getMoveDownLeft(coord))
-                .concat(this.getMoveDownRight(coord));
+                .concat(this.getJumpDownLeft(coord))
+                .concat(this.getJumpDownRight(coord));
+
+            if (moves.length == 0) {
+                moves = moves
+                    .concat(this.getMoveDownLeft(coord))
+                    .concat(this.getMoveDownRight(coord));
+            }
         }
 
         // temporary
@@ -420,13 +468,33 @@ class Checkers {
                 }
             }
         } else {
-            if (endRow != beginRow + 1) {
-                return false;
-            }
+            if (move.jumpOver != undefined) {
 
-            if (endCol != beginCol - 1 &&
-                endCol != beginCol + 1) {
-                return false;
+                if (endRow != beginRow + 2) {
+                    return false;
+                }
+
+                if (endCol != beginCol - 2 &&
+                    endCol != beginCol + 2) {
+                    return false;
+                }
+
+                var [jumpRow, jumpCol] = [move.jumpOver.row, move.jumpOver.col];
+                var opponent = Checkers.getOpponent(this.player);
+
+                if (this.getCell(jumpRow, jumpCol) != opponent) {
+                    return false;
+                }
+
+            } else {
+                if (endRow != beginRow + 1) {
+                    return false;
+                }
+
+                if (endCol != beginCol - 1 &&
+                    endCol != beginCol + 1) {
+                    return false;
+                }
             }
         }
 
