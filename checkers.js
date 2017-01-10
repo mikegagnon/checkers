@@ -15,10 +15,12 @@ EMPTY = 0;
 
 PLAYER_ONE = 1;
 PLAYER_ONE_FILENAME = "player-1.png";
+PLAYER_ONE_SUGGESTION_FILENAME = "player-1-suggestion.png";
 UP_PLAYER = PLAYER_ONE;
 
 PLAYER_TWO = 2;
 PLAYER_TWO_FILENAME = "player-2.png";
+PLAYER_TWO_SUGGESTION_FILENAME = "player-2-suggestion.png";
 DOWN_PLAYER = PLAYER_TWO;
 
 MAXIMIZING_PLAYER = PLAYER_ONE;
@@ -107,7 +109,7 @@ class Checkers {
     }
 
     // todo make elegant and dedup
-    possibleMoves(coord) {
+    getPossibleMoves(coord) {
         assert(this.gameOver == undefined);
 
         if (!this.validPieceToMove(coord)) {
@@ -638,6 +640,22 @@ class Viz {
         }
     }
 
+    // TODO: dedup
+    getSuggestionTag(player) {
+
+        var filename = undefined;
+
+        if (player == PLAYER_ONE) {
+            filename = PLAYER_ONE_SUGGESTION_FILENAME;
+        } else if (player == PLAYER_TWO) {
+            filename = PLAYER_TWO_SUGGESTION_FILENAME
+        } else {
+            assert(false);
+        }
+
+        return "<img src='" + filename + "' width='" + this.cell_size + "'>";
+    }
+
     getImgTag(player) {
 
         var filename = undefined;
@@ -674,6 +692,24 @@ class Viz {
     undoDrawSelectPiece(coord) {
         var cellId = Viz.getCellId(coord.row, coord.col);
         $("#" + cellId).removeClass("selected");
+    }
+
+    drawSuggestion(move) {
+        var row = move.coords[1].row;
+        var col = move.coords[1].col;
+        var cellId = Viz.getCellId(row, col);
+        var suggestionTag = this.getSuggestionTag(move.player);
+
+        $("#" + cellId + " img").remove();
+        $("#" + cellId).append(suggestionTag);
+    }
+
+    undoDrawSuggestion(move) {
+        var row = move.coords[1].row;
+        var col = move.coords[1].col;
+        var cellId = Viz.getCellId(row, col);
+
+        $("#" + cellId + " img").remove();
     }
 
     drawMove(move) {
@@ -832,6 +868,7 @@ if (FIRST_PLAYER == COMPUTER_PLAYER) {
 }
 
 var SELECT_PIECE_CELL = undefined;
+var POSSIBLE_MOVES = undefined;
 
 function cellClick(row, col) {
 
@@ -840,7 +877,7 @@ function cellClick(row, col) {
 
     var coord = new Coordinate(row, col); 
 
-    var possibleMoves = GAME.possibleMoves(coord);
+    var possibleMoves = GAME.getPossibleMoves(coord);
 
     if (possibleMoves.length > 0) {
 
@@ -848,10 +885,19 @@ function cellClick(row, col) {
 
         if (SELECT_PIECE_CELL != undefined) {
             VIZ.undoDrawSelectPiece(SELECT_PIECE_CELL);
+            
+            for (var i = 0; i < POSSIBLE_MOVES.length; i++) {
+                VIZ.undoDrawSuggestion(POSSIBLE_MOVES[i]);
+            }
         }
-
+        
         SELECT_PIECE_CELL = coord;
+        POSSIBLE_MOVES = possibleMoves;
         VIZ.drawSelectPiece(SELECT_PIECE_CELL);
+
+        for (var i = 0; i < POSSIBLE_MOVES.length; i++) {
+            VIZ.drawSuggestion(POSSIBLE_MOVES[i]);
+        }
     } else {
         // ?
     }
