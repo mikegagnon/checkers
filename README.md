@@ -1,2 +1,2 @@
-# checkers
+# Checkers
 A checkers AI
