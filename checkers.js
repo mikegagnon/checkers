@@ -248,16 +248,19 @@ class Checkers {
         for (var row = 0; row < this.numRows; row++) {
             for (var col = 0 ; col < this.numCols; col++) {
                 var coord = new Coordinate(row, col);
+                var cell = this.matrix[row][col];
 
-                if (this.matrix[row][col].player == this.player) {
+                if (cell.player == this.player) {
 
                     var jumps = [];
 
-                    if (this.player == UP_PLAYER) {
+                    if (this.player == UP_PLAYER || cell.king) {
                         jumps = jumps
                             .concat(this.getJumpUpLeft(coord))
                             .concat(this.getJumpUpRight(coord));
-                    } else {
+                    }
+
+                    if (this.player == DOWN_PLAYER || cell.king) {
                         jumps = jumps
                             .concat(this.getJumpDownLeft(coord))
                             .concat(this.getJumpDownRight(coord));
@@ -305,25 +308,32 @@ class Checkers {
 
         var jumpPossible = this.availableJump();
 
+        var cell = this.matrix[coord.row][coord.col];
+
         var moves = [];
 
-        if (this.player == UP_PLAYER) {
+        if (this.player == UP_PLAYER || cell.king) {
             moves = moves
                 .concat(this.getJumpUpLeft(coord))
                 .concat(this.getJumpUpRight(coord));
+        }
 
-            if (moves.length == 0 && !jumpPossible) {
+        if (this.player == DOWN_PLAYER || cell.king) {
+            moves = moves
+                .concat(this.getJumpDownLeft(coord))
+                .concat(this.getJumpDownRight(coord));
+        }
+
+
+        if (moves.length == 0 && !jumpPossible) {
+
+            if (this.player == UP_PLAYER || cell.king) {
                 moves = moves
                     .concat(this.getMoveUpLeft(coord))
                     .concat(this.getMoveUpRight(coord));
             }
-        } else {
 
-            moves = moves
-                .concat(this.getJumpDownLeft(coord))
-                .concat(this.getJumpDownRight(coord));
-
-            if (moves.length == 0 && !jumpPossible) {
+            if (this.player == DOWN_PLAYER || cell.king) {
                 moves = moves
                     .concat(this.getMoveDownLeft(coord))
                     .concat(this.getMoveDownRight(coord));
@@ -526,7 +536,7 @@ class Checkers {
             return false;
         }
 
-        if (move.player == UP_PLAYER) {
+        if (move.player == UP_PLAYER && !move.king) {
 
             if (move.jumpOver != undefined) {
 
@@ -556,7 +566,7 @@ class Checkers {
                     return false;
                 }
             }
-        } else {
+        } else if (move.player == DOWN_PLAYER && !move.king) {
             if (move.jumpOver != undefined) {
 
                 if (endRow != beginRow + 2) {
@@ -585,6 +595,37 @@ class Checkers {
                     return false;
                 }
             }
+        } else if (move.king) {
+            if (move.jumpOver != undefined) {
+
+                if (endRow != beginRow + 2 && endRow != beginRow - 2) {
+                    return false;
+                }
+
+                if (endCol != beginCol - 2 &&
+                    endCol != beginCol + 2) {
+                    return false;
+                }
+
+                var [jumpRow, jumpCol] = [move.jumpOver.row, move.jumpOver.col];
+                var opponent = Checkers.getOpponent(this.player);
+
+                if (this.getCell(jumpRow, jumpCol).player != opponent) {
+                    return false;
+                }
+
+            } else {
+                if (endRow != beginRow + 1 && endRow != beginRow - 1 ) {
+                    return false;
+                }
+
+                if (endCol != beginCol - 1 &&
+                    endCol != beginCol + 1) {
+                    return false;
+                }
+            }
+        } else {
+            assert(false);
         }
 
         return true;
@@ -618,7 +659,7 @@ class Checkers {
 
         this.checkGameOver();
 
-        if (this.jumpAgainPossible(move)) {
+        if (move.jumpOver != undefined && this.jumpAgainPossible(move)) {
             this.pieceMustPerformJump = move.coordEnd;
         } else {
             this.pieceMustPerformJump = undefined;
