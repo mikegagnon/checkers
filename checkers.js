@@ -928,7 +928,9 @@ class Viz {
 //    node.getScore()
 //    node.getChildren()
 //    node.getMove()
-function minMax(node, depth, maximizingPlayer) {
+function minMax(node, depth, maximizingPlayer,
+    alpha=Number.MIN_SAFE_INTEGER, beta=Number.MAX_SAFE_INTEGER) {
+
     if (node.isLeaf() || depth == 0) {
         return [node.getMove(), node.getScore()];
     }
@@ -943,11 +945,16 @@ function minMax(node, depth, maximizingPlayer) {
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
             var maximize = child.getMaximize();
-            var [_, childScore] = minMax(child, depth - 1, maximize);
+            var [_, childScore] = minMax(child, depth - 1, maximize, alpha, beta);
             bestScore = Math.max(childScore, bestScore);
+            alpha = Math.max(alpha, bestScore);
 
             if (bestScore == childScore) {
                 bestMove = child.getMove();
+            }
+
+            if (beta <= alpha) {
+                break;
             }
 
         }
@@ -964,11 +971,16 @@ function minMax(node, depth, maximizingPlayer) {
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
             var maximize = child.getMaximize();
-            var [_, childScore] = minMax(child, depth -1, maximize);
+            var [_, childScore] = minMax(child, depth -1, maximize, alpha, beta);
             bestScore = Math.min(childScore, bestScore);
+            beta = Math.min(beta, bestScore);
 
             if (bestScore == childScore) {
                 bestMove = child.getMove();
+            }
+
+            if (beta <= alpha) {
+                break;
             }
         }
         return [bestMove, bestScore];
