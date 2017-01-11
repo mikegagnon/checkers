@@ -15,11 +15,13 @@ EMPTY = 0;
 
 PLAYER_ONE = 1;
 PLAYER_ONE_FILENAME = "player-1.png";
+PLAYER_ONE_KING_FILENAME = "player-1-king.png";
 PLAYER_ONE_SUGGESTION_FILENAME = "player-1-suggestion.png";
 UP_PLAYER = PLAYER_ONE;
 
 PLAYER_TWO = 2;
 PLAYER_TWO_FILENAME = "player-2.png";
+PLAYER_TWO_KING_FILENAME = "player-2-king.png";
 PLAYER_TWO_SUGGESTION_FILENAME = "player-2-suggestion.png";
 DOWN_PLAYER = PLAYER_TWO;
 
@@ -598,6 +600,11 @@ class Checkers {
         if (move.jumpOver != undefined) {
             var [row, col] = [move.jumpOver.row, move.jumpOver.col];
             this.matrix[row][col].player = EMPTY;
+        }
+
+        if ((this.player == UP_PLAYER && endRow == 0) || (
+             this.player == DOWN_PLAYER && endRow == this.numRows - 1)) {
+            endCell.king = true;
         }
 
         this.checkGameOver();
