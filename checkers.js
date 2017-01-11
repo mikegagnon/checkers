@@ -673,7 +673,8 @@ class Node {
     }
 
     getNonLeafScore() {
-        
+        return this.game.countPieces(MAXIMIZING_PLAYER) - 
+               this.game.countPieces(MINIMIZING_PLAYER);   
     }
 
     getScore() {
@@ -694,6 +695,27 @@ class Node {
     // is a parent. The children of a parent represent
     // all the possible moves a parent can make.
     getChildren() {
+
+        var moves = [];
+
+        for (var row = 0; row < this.game.numRows; row++) {
+            for (var col = 0; col < this.game.numCols; col++) {
+                var coord = new Coordinate(row, col);
+                moves = moves.concat(this.game.getPossibleMoves(coord));
+            }
+        }
+
+        var children = [];
+
+        for (var i = 0; i < moves.length; i++) {
+            var move = moves[i];
+            var newGame = this.game.deepCopy();
+            newGame.makeMove(move);
+            var child = new Node(newGame, move);
+            children.push(child);
+        }
+
+        return children;
 
     }
 }
@@ -835,10 +857,13 @@ class Viz {
     }
 
     // assumes move is valid
+    // todo document
     drawMove(move, possibleMoves) {
 
-        for (var i = 0; i < possibleMoves.length; i++) {
-            VIZ.undoDrawSuggestion(possibleMoves[i]);
+        if (possibleMoves != undefined) {
+            for (var i = 0; i < possibleMoves.length; i++) {
+                VIZ.undoDrawSuggestion(possibleMoves[i]);
+            }
         }
 
         var [beginRow, beginCol] = [move.coordBegin.row, move.coordBegin.col];
@@ -941,7 +966,7 @@ function makeAiMove(game) {
 
     var [bestMove, _] = minMax(node, MIN_MAX_DEPTH, maximizing);
 
-    return game.makeMove(bestMove.row, bestMove.col);
+    return game.makeMove(bestMove);
 }
 
 /*******************************************************************************
@@ -982,7 +1007,12 @@ function cellClick(row, col) {
                 if (resultMove.gameOver != undefined) {
                     var color = PLAYER_COLOR[resultMove.gameOver.victor];
                     alert("Player " + color + " wins!");
+                } else {
+                    move = makeAiMove(GAME);
+                    // todo
+                    VIZ.drawMove(move, undefined);
                 }
+
                 madeMove = true;
             }
         }
