@@ -36,6 +36,7 @@ class Coordinate {
     constructor(row, col) {
         this.row = row;
         this.col = col;
+        Object.freeze(this);
     }
 
     equals(coord) {
@@ -240,11 +241,32 @@ class Checkers {
         return false;
     }
 
+    // assuming move has already affected the game state,
+    // is it possible for the moved piece to jump again?
+    jumpAgainPossible(move) {
+        var moves = this.getPossibleMoves(move.coordEnd);
+
+        for (var i = 0; i < moves.length; i++) {
+            var move = moves[i];
+
+            if (move.jumpOver != undefined) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // todo make elegant and dedup
     getPossibleMoves(coord) {
         assert(this.gameOver == undefined);
 
         if (!this.validPieceToMove(coord)) {
+            return [];
+        }
+
+        if (this.pieceMustPerformJump != undefined &&
+            !this.pieceMustPerformJump.equals(coord)) {
             return [];
         }
 
@@ -348,6 +370,11 @@ class Checkers {
         this.numRows = numRows;
         this.numCols = numCols;
 
+        // if defined, this.pieceMustPerformJump is the coordinate
+        // for the piece that must perform a jump this turn.
+        // this only happens as one step in a multi jump
+        this.pieceMustPerformJump = undefined;
+
         this.matrix = new Array(this.numRows);
         for (var row = 0; row < this.numRows; row++) {
             this.matrix[row] = new Array(this.numCols);
@@ -381,6 +408,10 @@ class Checkers {
                 newGame.matrix[row][col] = this.matrix[row][col];
             }
         }
+
+        // Coordinates are immutable
+        newGame.pieceMustPerformJump = this.pieceMustPerformJump;
+
 
         // We do not need to make a deepCopy of this.gameOver
         // because this.gameOver is immutable
@@ -544,7 +575,12 @@ class Checkers {
 
         this.checkGameOver();
 
-        this.player = Checkers.getOpponent(this.player);        
+        if (this.jumpAgainPossible(move)) {
+            this.pieceMustPerformJump = move.coordEnd;
+        } else {
+            this.pieceMustPerformJump = undefined;
+            this.player = Checkers.getOpponent(this.player);
+        }
 
         return new Move(
             move.coordBegin,
