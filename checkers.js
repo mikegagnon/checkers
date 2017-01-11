@@ -25,6 +25,11 @@ PLAYER_TWO_KING_FILENAME = "player-2-king.png";
 PLAYER_TWO_SUGGESTION_FILENAME = "player-2-suggestion.png";
 DOWN_PLAYER = PLAYER_TWO;
 
+PLAYER_COLOR = {
+    1: "Red",
+    2: "Black"
+}
+
 MAXIMIZING_PLAYER = PLAYER_ONE;
 MINIMIZING_PLAYER = PLAYER_TWO;
 
@@ -91,16 +96,11 @@ class GameOver {
     // if this.victor == PLAYER_ONE, then that indicates PLAYER_ONE won the game
     // if this.victor == PLAYER_TWO, then that indicates PLAYER_TWO won the game
     //
-    // this.count
-    // =================
-    // this.count[PLAYER_ONE] == the number of pieces that belong to PLAYER_ONE
-    // this.count[PLAYER_TWO] == the number of pieces that belong to PLAYER_TWO
     constructor(victor) {
         this.victor = victor;
 
         // Make GameOver immutable
         Object.freeze(this);
-        Object.freeze(this.count);
     }
 }
 
@@ -294,7 +294,9 @@ class Checkers {
 
     // todo make elegant and dedup
     getPossibleMoves(coord) {
-        assert(this.gameOver == undefined);
+        if (this.gameOver != undefined) {
+            return [];
+        }
 
         if (!this.validPieceToMove(coord)) {
             return [];
@@ -624,9 +626,28 @@ class Checkers {
     }
 
 
+    countPieces(player) {
+        var count = 0;
+
+        for (var row = 0; row < this.numRows; row++) {
+            for (var col = 0; col < this.numCols; col++) {
+                var piece = this.matrix[row][col];
+                if (piece.player == player) {
+                    count += 1;
+                }
+            }
+        }
+
+        return count;
+    }
+
     // TODO
     checkGameOver() {
-
+        if (this.countPieces(PLAYER_ONE) == 0) {
+            this.gameOver = new GameOver(PLAYER_TWO);
+        } else if (this.countPieces(PLAYER_TWO) == 0) {
+            this.gameOver = new GameOver(PLAYER_ONE);
+        }
     }
 
 }
@@ -957,6 +978,11 @@ function cellClick(row, col) {
             if (move.coordEnd.equals(coord)) {
                 var resultMove = GAME.makeMove(move);
                 VIZ.drawMove(resultMove, POSSIBLE_MOVES);
+
+                if (resultMove.gameOver != undefined) {
+                    var color = PLAYER_COLOR[resultMove.gameOver.victor];
+                    alert("Player " + color + " wins!");
+                }
                 madeMove = true;
             }
         }
