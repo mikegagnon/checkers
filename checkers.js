@@ -641,6 +641,21 @@ class Checkers {
         return count;
     }
 
+    countKingPieces(player) {
+        var count = 0;
+
+        for (var row = 0; row < this.numRows; row++) {
+            for (var col = 0; col < this.numCols; col++) {
+                var piece = this.matrix[row][col];
+                if (piece.player == player && piece.king) {
+                    count += 1;
+                }
+            }
+        }
+
+        return count;
+    }
+
     // TODO
     checkGameOver() {
         if (this.countPieces(PLAYER_ONE) == 0) {
@@ -673,8 +688,10 @@ class Node {
     }
 
     getNonLeafScore() {
-        return this.game.countPieces(MAXIMIZING_PLAYER) - 
-               this.game.countPieces(MINIMIZING_PLAYER);   
+        return this.game.countPieces(MAXIMIZING_PLAYER) +
+               this.game.countKingPieces(MAXIMIZING_PLAYER) * 2 - 
+               this.game.countPieces(MINIMIZING_PLAYER) -
+               this.game.countKingPieces(MINIMIZING_PLAYER) * 2;   
     }
 
     // TODO: document
