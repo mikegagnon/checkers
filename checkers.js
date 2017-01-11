@@ -95,9 +95,8 @@ class GameOver {
     // =================
     // this.count[PLAYER_ONE] == the number of pieces that belong to PLAYER_ONE
     // this.count[PLAYER_TWO] == the number of pieces that belong to PLAYER_TWO
-    constructor(victor, count) {
+    constructor(victor) {
         this.victor = victor;
-        this.count = count;
 
         // Make GameOver immutable
         Object.freeze(this);
@@ -473,58 +472,7 @@ class Checkers {
         }
     }
 
-    // old
-    tryCaptureDrDc(player, row, col, dr, dc) {
-
-        var otherPlayer;
-
-        if (player == PLAYER_ONE) {
-            otherPlayer = PLAYER_TWO;
-        } else {
-            otherPlayer = PLAYER_ONE;
-        }
-
-        var captured = [];
-
-        row += dr;
-        col += dc;
-
-        while (this.getCell(row, col).player == otherPlayer) {
-            captured.push([row, col]);
-            row += dr;
-            col += dc;
-        }
-
-        if (this.getCell(row, col).player == player)  {
-            return captured;
-        } else {
-            return [];
-        }
-    }
-
-    // old
-    tryCapture(player, row, col) {
-        var capturedUp = this.tryCaptureDrDc(player, row, col, -1, 0);
-        var capturedDown = this.tryCaptureDrDc(player, row, col, 1, 0);
-        var capturedLeft = this.tryCaptureDrDc(player, row, col, 0, -1);
-        var capturedRight = this.tryCaptureDrDc(player, row, col, 0, 1);
-
-        var capturedDiagonal1 = this.tryCaptureDrDc(player, row, col, 1, 1);
-        var capturedDiagonal2 = this.tryCaptureDrDc(player, row, col, 1, -1);
-        var capturedDiagonal3 = this.tryCaptureDrDc(player, row, col, -1, 1);
-        var capturedDiagonal4 = this.tryCaptureDrDc(player, row, col, -1, -1);
-
-
-        return capturedUp
-            .concat(capturedDown)
-            .concat(capturedLeft)
-            .concat(capturedRight)
-            .concat(capturedDiagonal1)
-            .concat(capturedDiagonal2)
-            .concat(capturedDiagonal3)
-            .concat(capturedDiagonal4)
-    }
-
+    // TODO
     isMoveValid(move) {
         var [beginRow, beginCol] = [move.coordBegin.row, move.coordBegin.col];
         if (this.getCell(beginRow, beginCol).player != move.player) {
@@ -675,41 +623,12 @@ class Checkers {
             this.gameOver);
     }
 
-    // returns true iff player has a valid move
-    canMove(player) {
-        for (var row = 0; row < this.numRows; row++) {
-            for (var col = 0; col < this.numCols; col++) {
-
-                var captured = this.tryCapture(player, row, col);
-
-                if (!this.isMoveInvalid(row, col, captured.length)) {
-                    return true;
-                } 
-
-            }
-        }
-
-        return false;
-    }
 
     // TODO
     checkGameOver() {
 
     }
 
-    countPieces(player) {
-        var count = 0;
-
-        for (var row = 0; row < this.numRows; row++) {
-            for (var col = 0; col < this.numCols; col++) {
-                if (this.matrix[row][col].player == player) {
-                    count += 1;
-                }
-            }
-        }
-
-        return count;
-    }
 }
 
 
@@ -732,114 +651,8 @@ class Node {
         return this.game.gameOver != undefined;
     }
 
-    getNumAvailableMoves(player) {
-        var count = 0;
-
-        for (var row = 0; row < this.game.numRows; row++) {
-            for (var col = 0; col < this.game.numCols; col++) {
-
-                var captured = this.game.tryCapture(player, row, col);
-                var numCaptured = captured.length
-
-                if (!this.game.isMoveInvalid(row, col, numCaptured)) {
-                    count += 1;
-                }
-            }
-        }
-
-        return count;
-    }
-
-    isPotential(player, row, col) {
-        if (this.game.matrix[row][col] != Checkers.getOpponent(player)) {
-            return false;
-        }
-
-        // The row above
-        var a = this.game.getCell(row - 1, col - 1);
-        var b = this.game.getCell(row - 1, col);
-        var c = this.game.getCell(row - 1, col + 1);
-
-        // The row below
-        var d = this.game.getCell(row + 1, col - 1);
-        var e = this.game.getCell(row + 1, col);
-        var f = this.game.getCell(row + 1, col + 1);
-
-        // to the left
-        var g = this.game.getCell(row, col - 1);
-
-        // to the right
-        var h = this.game.getCell(row, col + 1);
-
-        return  a == EMPTY ||
-                b == EMPTY ||
-                c == EMPTY ||
-                d == EMPTY ||
-                e == EMPTY ||
-                f == EMPTY ||
-                g == EMPTY ||
-                h == EMPTY;
-    }
-
-    getNumPotential(player) {
-        var count = 0;
-
-        for (var row = 0; row < this.game.numRows; row++) {
-            for (var col = 0; col < this.game.numCols; col++) {
-
-                if (this.isPotential(player, row, col)) {
-                    count += 1;
-                }
-            }
-        }
-
-        return count;   
-    }
-
-    getNumCorners(player) {
-        var numRows = this.game.numRows;
-        var numCols = this.game.numCols;
-        var corners =
-            [[0, 0],
-             [0, numCols - 1],
-             [numRows - 1, 0],
-             [numRows - 1, numCols - 1]];
-
-        var count = 0;
-
-        for (var i = 0; i < corners.length; i++) {
-            var [row, col] = corners[i];
-            if (this.game.matrix[row][col] == player) {
-                count += 1;
-            }
-        }
-
-        return count;
-    }
-
-    // http://home.datacomm.ch/t_wolf/tw/misc/reversi/html/index.html
-    // http://www.samsoft.org.uk/reversi/strategy.htm
     getNonLeafScore() {
-        var numPieces =
-            this.game.countPieces(MAXIMIZING_PLAYER) -
-            this.game.countPieces(MINIMIZING_PLAYER);
-
-        var numAvailableMoves =
-            this.getNumAvailableMoves(MAXIMIZING_PLAYER) -
-            this.getNumAvailableMoves(MINIMIZING_PLAYER);
-
-        var numPotential =
-            this.getNumPotential(MAXIMIZING_PLAYER) -
-            this.getNumPotential(MINIMIZING_PLAYER);
-
-        var numCorners =
-            this.getNumCorners(MAXIMIZING_PLAYER) -
-            this.getNumCorners(MINIMIZING_PLAYER);
-
-        return numPieces +
-               numCorners * 20 +
-               numAvailableMoves * 6 +
-               numPotential * 2;
+        
     }
 
     getScore() {
@@ -861,25 +674,6 @@ class Node {
     // all the possible moves a parent can make.
     getChildren() {
 
-        var childrenNodes = [];
-
-        for (var row = 0; row < this.game.numRows; row++) {
-            for (var col = 0; col < this.game.numCols; col++) {
-
-                var childGame = this.game.deepCopy();
-
-                var move = childGame.makeMove(row, col);
-
-                if (move.valid) {
-                    var childNode = new Node(childGame, move);
-                    childrenNodes.push(childNode);
-                }
-            }
-        }
-
-        assert(childrenNodes.length > 0);
-
-        return childrenNodes;
     }
 }
 
@@ -1197,10 +991,5 @@ function cellClick(row, col) {
         // ?
     }
 
-
-
-
-    //var move = GAME.makeMove(row, col);
-    //VIZ.drawMove(move);
 }
 
