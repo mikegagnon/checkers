@@ -102,6 +102,28 @@ class GameOver {
     }
 }
 
+
+/*******************************************************************************
+ * Cell class
+ ******************************************************************************/
+class Cell {
+    // player == PLAYER_ONE or
+    // player == PLAYER_TWO or
+    // player == EMPTY or
+    // player == undefined, which means out of bounds
+    constructor(player, king) {
+        this.player = player;
+        this.king = king;
+    }
+
+    deepCopy() {
+        var newCell = new Cell(this.player, this.king);
+        return newCell;
+    }
+}
+
+OOB_CELL = new Cell(undefined, false);
+
 /*******************************************************************************
  * Checkers class
  ******************************************************************************/
@@ -118,8 +140,8 @@ class Checkers {
 
     getJumpUpLeft(begin) {
         var opponent = Checkers.getOpponent(this.player);
-        if (this.getCell(begin.row - 1, begin.col - 1) == opponent &&
-            this.getCell(begin.row - 2, begin.col - 2) == EMPTY) {
+        if (this.getCell(begin.row - 1, begin.col - 1).player == opponent &&
+            this.getCell(begin.row - 2, begin.col - 2).player == EMPTY) {
             var jumpedOver = new Coordinate(begin.row - 1, begin.col - 1);
             var end = new Coordinate(begin.row - 2, begin.col - 2);
             var move = new Move(begin, end, jumpedOver, this.player, undefined);
@@ -131,8 +153,8 @@ class Checkers {
 
     getJumpUpRight(begin) {
         var opponent = Checkers.getOpponent(this.player);
-        if (this.getCell(begin.row - 1, begin.col + 1) == opponent &&
-            this.getCell(begin.row - 2, begin.col + 2) == EMPTY) {
+        if (this.getCell(begin.row - 1, begin.col + 1).player == opponent &&
+            this.getCell(begin.row - 2, begin.col + 2).player == EMPTY) {
             var jumpedOver = new Coordinate(begin.row - 1, begin.col + 1);
             var end = new Coordinate(begin.row - 2, begin.col + 2);
             var move = new Move(begin, end, jumpedOver, this.player, undefined);
@@ -144,8 +166,8 @@ class Checkers {
 
     getJumpDownLeft(begin) {
         var opponent = Checkers.getOpponent(this.player);
-        if (this.getCell(begin.row + 1, begin.col - 1) == opponent &&
-            this.getCell(begin.row + 2, begin.col - 2) == EMPTY) {
+        if (this.getCell(begin.row + 1, begin.col - 1).player == opponent &&
+            this.getCell(begin.row + 2, begin.col - 2).player == EMPTY) {
             var jumpedOver = new Coordinate(begin.row + 1, begin.col - 1);
             var end = new Coordinate(begin.row + 2, begin.col - 2);
             var move = new Move(begin, end, jumpedOver, this.player, undefined);
@@ -157,8 +179,8 @@ class Checkers {
 
     getJumpDownRight(begin) {
         var opponent = Checkers.getOpponent(this.player);
-        if (this.getCell(begin.row + 1, begin.col + 1) == opponent &&
-            this.getCell(begin.row + 2, begin.col + 2) == EMPTY) {
+        if (this.getCell(begin.row + 1, begin.col + 1).player == opponent &&
+            this.getCell(begin.row + 2, begin.col + 2).player == EMPTY) {
             var jumpedOver = new Coordinate(begin.row + 1, begin.col + 1);
             var end = new Coordinate(begin.row + 2, begin.col + 2);
             var move = new Move(begin, end, jumpedOver, this.player, undefined);
@@ -170,7 +192,7 @@ class Checkers {
 
     // TODO: simplify with drdc
     getMoveUpLeft(coord) {
-        if (this.getCell(coord.row - 1, coord.col - 1) == EMPTY) {
+        if (this.getCell(coord.row - 1, coord.col - 1).player == EMPTY) {
             var newCoord = new Coordinate(coord.row - 1, coord.col - 1);
             var move = new Move(coord, newCoord, undefined, this.player, undefined);
             return [move];
@@ -180,7 +202,7 @@ class Checkers {
     }
 
     getMoveUpRight(coord) {
-        if (this.getCell(coord.row - 1, coord.col + 1) == EMPTY) {
+        if (this.getCell(coord.row - 1, coord.col + 1).player == EMPTY) {
             var newCoord = new Coordinate(coord.row - 1, coord.col + 1);
             var move = new Move(coord, newCoord, undefined, this.player, undefined);
             return [move];
@@ -190,7 +212,7 @@ class Checkers {
     }
 
     getMoveDownLeft(coord) {
-        if (this.getCell(coord.row + 1, coord.col - 1) == EMPTY) {
+        if (this.getCell(coord.row + 1, coord.col - 1).player == EMPTY) {
             var newCoord = new Coordinate(coord.row + 1, coord.col - 1);
             var move = new Move(coord, newCoord, undefined, this.player, undefined);
             return [move];
@@ -200,7 +222,7 @@ class Checkers {
     }
 
     getMoveDownRight(coord) {
-        if (this.getCell(coord.row + 1, coord.col + 1) == EMPTY) {
+        if (this.getCell(coord.row + 1, coord.col + 1).player == EMPTY) {
             var newCoord = new Coordinate(coord.row + 1, coord.col + 1);
             var move = new Move(coord, newCoord, undefined, this.player, undefined);
             return [move];
@@ -216,7 +238,7 @@ class Checkers {
             for (var col = 0 ; col < this.numCols; col++) {
                 var coord = new Coordinate(row, col);
 
-                if (this.matrix[row][col] == this.player) {
+                if (this.matrix[row][col].player == this.player) {
 
                     var jumps = [];
 
@@ -308,7 +330,7 @@ class Checkers {
 
     // TODO better function name
     validPieceToMove(coord) {
-        return this.matrix[coord.row][coord.col] == this.player;
+        return this.matrix[coord.row][coord.col].player == this.player;
     }
 
     // returns a list of PlayerCoordinate objects
@@ -379,7 +401,7 @@ class Checkers {
         for (var row = 0; row < this.numRows; row++) {
             this.matrix[row] = new Array(this.numCols);
             for (var col = 0; col < this.numCols; col++) {
-                this.matrix[row][col] = EMPTY;
+                this.matrix[row][col] = new Cell(EMPTY, false);
             }
         }
 
@@ -387,7 +409,7 @@ class Checkers {
         var initPosition = this.getInitPosition();
         for (var i = 0; i < initPosition.length; i++) {
             var pc = initPosition[i];
-            this.matrix[pc.coord.row][pc.coord.col] = pc.player;
+            this.matrix[pc.coord.row][pc.coord.col].player = pc.player;
         }
 
         // this.player always equals the player (either PLAYER_ONE or
@@ -405,7 +427,7 @@ class Checkers {
 
         for (var row = 0; row < this.numRows; row++) {
             for (var col = 0; col < this.numCols; col++) {
-                newGame.matrix[row][col] = this.matrix[row][col];
+                newGame.matrix[row][col] = this.matrix[row][col].deepCopy();
             }
         }
 
@@ -424,7 +446,7 @@ class Checkers {
     getCell(row, col) {
         if (!(row >= 0 && row < this.numRows &&
                col >= 0 && col < this.numCols)) {
-            return undefined;
+            return OOB_CELL;
         } else {
             return this.matrix[row][col];
         }
@@ -446,13 +468,13 @@ class Checkers {
         row += dr;
         col += dc;
 
-        while (this.getCell(row, col) == otherPlayer) {
+        while (this.getCell(row, col).player == otherPlayer) {
             captured.push([row, col]);
             row += dr;
             col += dc;
         }
 
-        if (this.getCell(row, col) == player)  {
+        if (this.getCell(row, col).player == player)  {
             return captured;
         } else {
             return [];
@@ -484,12 +506,12 @@ class Checkers {
 
     isMoveValid(move) {
         var [beginRow, beginCol] = [move.coordBegin.row, move.coordBegin.col];
-        if (this.getCell(beginRow, beginCol) != move.player) {
+        if (this.getCell(beginRow, beginCol).player != move.player) {
             return false;
         }
 
         var [endRow, endCol] = [move.coordEnd.row, move.coordEnd.col];
-        if (this.getCell(endRow, endCol) != EMPTY) {
+        if (this.getCell(endRow, endCol).player != EMPTY) {
             return false;
         }
 
@@ -509,7 +531,7 @@ class Checkers {
                 var [jumpRow, jumpCol] = [move.jumpOver.row, move.jumpOver.col];
                 var opponent = Checkers.getOpponent(this.player);
 
-                if (this.getCell(jumpRow, jumpCol) != opponent) {
+                if (this.getCell(jumpRow, jumpCol).player != opponent) {
                     return false;
                 }
 
@@ -538,7 +560,7 @@ class Checkers {
                 var [jumpRow, jumpCol] = [move.jumpOver.row, move.jumpOver.col];
                 var opponent = Checkers.getOpponent(this.player);
 
-                if (this.getCell(jumpRow, jumpCol) != opponent) {
+                if (this.getCell(jumpRow, jumpCol).player != opponent) {
                     return false;
                 }
 
@@ -565,12 +587,17 @@ class Checkers {
         var [beginRow, beginCol] = [move.coordBegin.row, move.coordBegin.col];
         var [endRow, endCol] = [move.coordEnd.row, move.coordEnd.col];
 
-        this.matrix[beginRow][beginCol] = EMPTY;
-        this.matrix[endRow][endCol] = this.player;
+        var endCell = this.matrix[endRow][endCol];
+        var beginCell = this.matrix[beginRow][beginCol];
+
+        endCell.player = beginCell.player;
+        endCell.king = beginCell.king;
+
+        beginCell.player = EMPTY;
 
         if (move.jumpOver != undefined) {
             var [row, col] = [move.jumpOver.row, move.jumpOver.col];
-            this.matrix[row][col] = EMPTY;
+            this.matrix[row][col].player = EMPTY;
         }
 
         this.checkGameOver();
@@ -617,7 +644,7 @@ class Checkers {
 
         for (var row = 0; row < this.numRows; row++) {
             for (var col = 0; col < this.numCols; col++) {
-                if (this.matrix[row][col] == player) {
+                if (this.matrix[row][col].player == player) {
                     count += 1;
                 }
             }
