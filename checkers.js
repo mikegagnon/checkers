@@ -60,11 +60,12 @@ class Move {
     // TODO: document
     // todo switch to begin and end instead of coordBegin...
     // to change jumpOver to jumped
-    constructor(coordBegin, coordEnd, jumpOver, player, gameOver) {
+    constructor(coordBegin, coordEnd, jumpOver, player, king, gameOver) {
         this.coordBegin = coordBegin;
         this.coordEnd = coordEnd;
         this.jumpOver = jumpOver;
         this.player = player;
+        this.king = king;
         this.gameOver = gameOver;
     }
 }
@@ -146,7 +147,8 @@ class Checkers {
             this.getCell(begin.row - 2, begin.col - 2).player == EMPTY) {
             var jumpedOver = new Coordinate(begin.row - 1, begin.col - 1);
             var end = new Coordinate(begin.row - 2, begin.col - 2);
-            var move = new Move(begin, end, jumpedOver, this.player, undefined);
+            var king = this.getCell(begin.row, begin.col).king;
+            var move = new Move(begin, end, jumpedOver, this.player, king, undefined);
             return [move];
         } else {
             return [];
@@ -159,7 +161,8 @@ class Checkers {
             this.getCell(begin.row - 2, begin.col + 2).player == EMPTY) {
             var jumpedOver = new Coordinate(begin.row - 1, begin.col + 1);
             var end = new Coordinate(begin.row - 2, begin.col + 2);
-            var move = new Move(begin, end, jumpedOver, this.player, undefined);
+            var king = this.getCell(begin.row, begin.col).king;
+            var move = new Move(begin, end, jumpedOver, this.player, king, undefined);
             return [move];
         } else {
             return [];
@@ -172,7 +175,8 @@ class Checkers {
             this.getCell(begin.row + 2, begin.col - 2).player == EMPTY) {
             var jumpedOver = new Coordinate(begin.row + 1, begin.col - 1);
             var end = new Coordinate(begin.row + 2, begin.col - 2);
-            var move = new Move(begin, end, jumpedOver, this.player, undefined);
+            var king = this.getCell(begin.row, begin.col).king;
+            var move = new Move(begin, end, jumpedOver, this.player, king, undefined);
             return [move];
         } else {
             return [];
@@ -185,7 +189,8 @@ class Checkers {
             this.getCell(begin.row + 2, begin.col + 2).player == EMPTY) {
             var jumpedOver = new Coordinate(begin.row + 1, begin.col + 1);
             var end = new Coordinate(begin.row + 2, begin.col + 2);
-            var move = new Move(begin, end, jumpedOver, this.player, undefined);
+            var king = this.getCell(begin.row, begin.col).king;
+            var move = new Move(begin, end, jumpedOver, this.player, king, undefined);
             return [move];
         } else {
             return [];
@@ -196,7 +201,8 @@ class Checkers {
     getMoveUpLeft(coord) {
         if (this.getCell(coord.row - 1, coord.col - 1).player == EMPTY) {
             var newCoord = new Coordinate(coord.row - 1, coord.col - 1);
-            var move = new Move(coord, newCoord, undefined, this.player, undefined);
+            var king = this.getCell(coord.row, coord.col).king;
+            var move = new Move(coord, newCoord, undefined, this.player, king, undefined);
             return [move];
         } else {
             return [];
@@ -206,7 +212,8 @@ class Checkers {
     getMoveUpRight(coord) {
         if (this.getCell(coord.row - 1, coord.col + 1).player == EMPTY) {
             var newCoord = new Coordinate(coord.row - 1, coord.col + 1);
-            var move = new Move(coord, newCoord, undefined, this.player, undefined);
+            var king = this.getCell(coord.row, coord.col).king;
+            var move = new Move(coord, newCoord, undefined, this.player, king, undefined);
             return [move];
         } else {
             return [];
@@ -216,7 +223,8 @@ class Checkers {
     getMoveDownLeft(coord) {
         if (this.getCell(coord.row + 1, coord.col - 1).player == EMPTY) {
             var newCoord = new Coordinate(coord.row + 1, coord.col - 1);
-            var move = new Move(coord, newCoord, undefined, this.player, undefined);
+            var king = this.getCell(coord.row, coord.col).king;
+            var move = new Move(coord, newCoord, undefined, this.player, king, undefined);
             return [move];
         } else {
             return [];
@@ -226,7 +234,8 @@ class Checkers {
     getMoveDownRight(coord) {
         if (this.getCell(coord.row + 1, coord.col + 1).player == EMPTY) {
             var newCoord = new Coordinate(coord.row + 1, coord.col + 1);
-            var move = new Move(coord, newCoord, undefined, this.player, undefined);
+            var king = this.getCell(coord.row, coord.col).king;
+            var move = new Move(coord, newCoord, undefined, this.player, king, undefined);
             return [move];
         } else {
             return [];
@@ -621,6 +630,7 @@ class Checkers {
             move.coordEnd,
             move.jumpOver,
             move.player,
+            endCell.king,
             this.gameOver);
     }
 
@@ -904,14 +914,22 @@ class Viz {
         return "<img src='" + filename + "' width='" + this.cell_size + "'>";
     }
 
-    getImgTag(player) {
+    getImgTag(move) {
 
         var filename = undefined;
 
-        if (player == PLAYER_ONE) {
-            filename = PLAYER_ONE_FILENAME;
-        } else if (player == PLAYER_TWO) {
-            filename = PLAYER_TWO_FILENAME
+        if (move.player == PLAYER_ONE) {
+            if (move.king) {
+                filename = PLAYER_ONE_KING_FILENAME;
+            } else {
+                filename = PLAYER_ONE_FILENAME;
+            }
+        } else if (move.player == PLAYER_TWO) {
+            if (move.king) {
+                filename = PLAYER_TWO_KING_FILENAME;
+            } else {
+                filename = PLAYER_TWO_FILENAME;
+            }
         } else {
             assert(false);
         }
@@ -926,7 +944,7 @@ class Viz {
             var pc = playerCoords[i];
 
             var cellId = Viz.getCellId(pc.coord.row, pc.coord.col);
-            var imgTag = this.getImgTag(pc.player);
+            var imgTag = this.getImgTag(pc);
 
             $("#" + cellId).append(imgTag);
         }
@@ -985,7 +1003,7 @@ class Viz {
 
         // Add the piece
         var cellId = Viz.getCellId(endRow, endCol);
-        var imgTag = this.getImgTag(move.player);
+        var imgTag = this.getImgTag(move);
         $("#" + cellId).append(imgTag);
     }
 }
