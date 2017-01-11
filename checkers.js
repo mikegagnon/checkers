@@ -1008,9 +1008,21 @@ function cellClick(row, col) {
                     var color = PLAYER_COLOR[resultMove.gameOver.victor];
                     alert("Player " + color + " wins!");
                 } else {
-                    move = makeAiMove(GAME);
-                    // todo
-                    VIZ.drawMove(move, undefined);
+
+                    if (GAME.pieceMustPerformJump == undefined) {
+
+                        function doAiMove() {
+                            move = makeAiMove(GAME);
+                            VIZ.drawMove(move, undefined);
+
+                            if (GAME.pieceMustPerformJump != undefined) {
+                                window.setTimeout(doAiMove, 300);
+                            }
+                        }
+
+                        window.setTimeout(doAiMove, 300);
+
+                    }
                 }
 
                 madeMove = true;
