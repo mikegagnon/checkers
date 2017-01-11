@@ -677,6 +677,11 @@ class Node {
                this.game.countPieces(MINIMIZING_PLAYER);   
     }
 
+    // TODO: document
+    getMaximize() {
+        this.game.player == MAXIMIZING_PLAYER;
+    }
+
     getScore() {
         if (this.game.gameOver != undefined) {
             if (this.game.gameOver.victor == MAXIMIZING_PLAYER) {
@@ -920,7 +925,8 @@ function minMax(node, depth, maximizingPlayer) {
         var children = node.getChildren();
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
-            var [_, childScore] = minMax(child, depth - 1, false);
+            var maximize = child.getMaximize();
+            var [_, childScore] = minMax(child, depth - 1, maximize);
             bestScore = Math.max(childScore, bestScore);
 
             if (bestScore == childScore) {
@@ -940,7 +946,8 @@ function minMax(node, depth, maximizingPlayer) {
         var children = node.getChildren();
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
-            var [_, childScore] = minMax(child, depth -1, true);
+            var maximize = child.getMaximize();
+            var [_, childScore] = minMax(child, depth -1, maximize);
             bestScore = Math.min(childScore, bestScore);
 
             if (bestScore == childScore) {
